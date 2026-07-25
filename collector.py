@@ -29,6 +29,7 @@ WEB_INTERFACES = (
 SERVICES = (
     ("SSH", "ssh.service", 22),
     ("Docker", "docker.service", None),
+    ("Hermes agent", "hermes-gateway.service", None),
     ("Tailscale", "tailscaled.service", None),
     ("Syncthing", "syncthing@user.service", 8384),
     ("Cockpit", "cockpit.socket", 9090),

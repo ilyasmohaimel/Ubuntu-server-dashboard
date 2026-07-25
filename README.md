@@ -4,14 +4,16 @@ Frostserver is a static, responsive server dashboard served by an unprivileged N
 
 ## Information architecture
 
-- **Apps Hub** is the default landing view and launches every installed web application.
-- **Overview** contains live capacity, temperature, fan, service, process, and alert detail.
-- **Performance, Storage, Network, Services, and Processes** route directly to the corresponding Overview section.
+- **Overview** is the default landing view and contains live capacity, temperature, fan, Docker, Hermes agent, service, process, and alert detail.
+- **Apps Hub** provides search, health, and launch details for every installed web application.
+- The sidebar provides direct, status-aware app launchers instead of duplicate links to Overview sections.
 - The command palette (`Ctrl` + `K`) provides a keyboard route switcher.
 
 ## Apps Hub
 
 The hub includes Frostserver Dashboard, Cockpit, Uptime Kuma, File Browser, FreshRSS, and Syncthing. It provides search, category filters, health status, port/context, local-probe latency, and an external open action.
+
+App artwork is sourced from [Dashboard Icons](https://github.com/homarr-labs/dashboard-icons) and vendored into the static site. It only identifies applications; browsing the dashboard does not contact a third-party icon service.
 
 Application URLs are deliberately built in the browser from `window.location.hostname` plus the verified scheme and port. A dashboard opened through a LAN address, private overlay network, or reverse proxy therefore launches the same server through that address. The UI validates destinations and permits only `http:` and `https:` URLs. All outbound app links use `rel="noopener noreferrer"`.
 
