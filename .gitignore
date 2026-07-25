@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.log
+metrics.json
+frost-dashboard-*.png

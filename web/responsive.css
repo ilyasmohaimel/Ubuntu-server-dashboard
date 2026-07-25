@@ -1,0 +1,11 @@
+.panel-heading > div { min-width: 0; }
+.cpu-panel #cpuModel { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+@media (max-width: 760px) {
+  .first-row { display: block !important; min-width: 0; }
+  .first-row .panel { width: 100%; min-width: 0; margin-bottom: 10px; overflow: hidden; }
+  .host-details { grid-template-columns: minmax(0, 1fr); }
+  .host-details dd { overflow-wrap: anywhere; word-break: break-word; }
+  .cpu-panel .panel-heading { display: block; }
+  .cpu-panel .temperature { display: block; margin-top: 4px; font-size: 20px !important; white-space: nowrap; }
+}

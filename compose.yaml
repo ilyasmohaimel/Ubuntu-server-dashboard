@@ -1,0 +1,19 @@
+services:
+  frost-dashboard:
+    image: nginx:1.27-alpine
+    container_name: frost-dashboard
+    user: "101:101"
+    restart: unless-stopped
+    ports:
+      - "0.0.0.0:80:8080"
+    volumes:
+      - /opt/frost-dashboard/web:/usr/share/nginx/html:ro
+      - /opt/frost-dashboard/nginx.conf:/etc/nginx/nginx.conf:ro
+      - /run/frost-dashboard:/var/run/frost-dashboard:ro
+    environment:
+      TZ: Africa/Casablanca
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

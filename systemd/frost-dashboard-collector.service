@@ -1,0 +1,20 @@
+[Unit]
+Description=Frostserver dashboard metrics collector
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStartPre=/usr/bin/install -d -m 0755 /run/frost-dashboard
+ExecStart=/usr/bin/python3 /opt/frost-dashboard/collector.py
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/run/frost-dashboard
+SystemCallArchitectures=native
+
+[Install]
+WantedBy=multi-user.target

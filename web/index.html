@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <meta name="description" content="Private real-time dashboard for frostserver">
+    <title>Frostserver</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/responsive.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Dashboard navigation">
+        <a class="wordmark" href="#overview">Frost<span>server</span></a>
+        <nav class="side-nav">
+          <a class="active" href="#overview">Overview</a>
+          <a href="#cpu">CPU</a>
+          <a href="#memory">Memory</a>
+          <a href="#storage">Storage</a>
+          <a href="#network">Network</a>
+          <a href="#services">Services</a>
+          <a href="#docker">Docker</a>
+          <a href="#processes">Processes</a>
+        </nav>
+        <div class="sidebar-host" id="sidebarHost">Connecting to collector…</div>
+      </aside>
+
+      <main>
+        <header class="topbar">
+          <button class="menu-button" id="menuButton" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+          <div class="topbar-meta"><time id="localTime">Loading time…</time><span class="divider"></span><span id="connectionState"><i></i>Connecting</span></div>
+        </header>
+
+        <div class="content">
+          <section class="heading" id="overview">
+            <div><h1>Overview</h1><p>Private real-time infrastructure status.</p></div>
+            <span class="refresh" id="refreshState">Awaiting first update</span>
+          </section>
+
+          <section class="dashboard-grid first-row">
+            <article class="panel host-panel" aria-labelledby="hostTitle">
+              <div class="panel-heading"><h2 id="hostTitle">Host &amp; OS</h2><span class="healthy-dot" id="hostHealth"></span></div>
+              <dl class="host-details" id="hostDetails"></dl>
+            </article>
+
+            <article class="panel cpu-panel" id="cpu" aria-labelledby="cpuTitle">
+              <div class="panel-heading"><div><h2 id="cpuTitle">CPU</h2><span class="muted" id="cpuModel">Loading…</span></div><strong class="temperature" id="cpuTemperature">—</strong></div>
+              <div class="legend"><span class="blue-key">Utilization</span><span class="green-key">Package temperature</span></div>
+              <canvas id="cpuChart" aria-label="CPU utilization and temperature history"></canvas>
+              <div class="core-row" id="coreUsage"></div>
+            </article>
+
+            <article class="panel memory-panel" id="memory" aria-labelledby="memoryTitle">
+              <div class="panel-heading"><h2 id="memoryTitle">Memory</h2><strong id="memoryPercent">—</strong></div>
+              <div class="memory-layout"><div class="donut" id="memoryDonut"><span id="memoryUsed">—</span></div><dl class="metric-list" id="memoryDetails"></dl></div>
+              <canvas class="small-chart" id="memoryChart" aria-label="Memory history"></canvas>
+            </article>
+
+            <article class="panel network-panel" id="network" aria-labelledby="networkTitle">
+              <div class="panel-heading"><h2 id="networkTitle">Network</h2><span class="muted" id="networkInterface">—</span></div>
+              <div class="network-layout"><div class="network-graphs"><canvas class="tiny-chart" id="downloadChart" aria-label="Download history"></canvas><canvas class="tiny-chart" id="uploadChart" aria-label="Upload history"></canvas></div><dl class="metric-list" id="networkDetails"></dl></div>
+            </article>
+          </section>
+
+          <section class="dashboard-grid second-row">
+            <article class="panel table-panel" id="storage" aria-labelledby="storageTitle"><div class="panel-heading"><h2 id="storageTitle">Storage</h2><span class="muted">Mounted filesystems</span></div><div class="table-wrap"><table><thead><tr><th>Mount</th><th>Purpose</th><th>Used</th><th>Free</th><th>Health</th></tr></thead><tbody id="storageRows"></tbody></table></div></article>
+            <article class="panel table-panel" id="docker" aria-labelledby="dockerTitle"><div class="panel-heading"><h2 id="dockerTitle">Docker</h2><span class="muted" id="dockerCount">—</span></div><div class="table-wrap"><table><thead><tr><th>Container</th><th>Status</th><th>CPU</th><th>Memory</th><th>Ports</th></tr></thead><tbody id="dockerRows"></tbody></table></div></article>
+          </section>
+
+          <section class="dashboard-grid third-row">
+            <article class="panel thermal-panel" aria-labelledby="thermalTitle"><div class="panel-heading"><h2 id="thermalTitle">Temperatures &amp; fans</h2><span class="muted">Live hardware telemetry</span></div><div class="thermal-metrics" id="thermalMetrics"></div><div class="fan-status" id="fanStatus"></div></article>
+            <article class="panel interfaces-panel" aria-labelledby="interfacesTitle"><div class="panel-heading"><h2 id="interfacesTitle">Web interfaces</h2><span class="muted">Verified locally</span></div><div class="interface-list" id="interfaceRows"></div></article>
+          </section>
+
+          <section class="dashboard-grid fourth-row">
+            <article class="panel table-panel" id="services" aria-labelledby="servicesTitle"><div class="panel-heading"><h2 id="servicesTitle">Services</h2><span class="muted">Read-only status</span></div><div class="service-list" id="serviceRows"></div></article>
+            <article class="panel table-panel" id="processes" aria-labelledby="processesTitle"><div class="panel-heading"><h2 id="processesTitle">Top processes</h2><span class="muted">By CPU</span></div><div class="table-wrap"><table><thead><tr><th>Process</th><th>PID</th><th>User</th><th>CPU</th><th>Memory</th><th>Runtime</th></tr></thead><tbody id="processRows"></tbody></table></div></article>
+          </section>
+
+          <section class="alerts" id="alerts" aria-live="polite"></section>
+        </div>
+      </main>
+    </div>
+    <script src="/app.js" defer></script>
+  </body>
+</html>
