@@ -20,11 +20,11 @@ METRICS_PATH = RUNTIME_DIR / "metrics.json"
 INTERVAL_SECONDS = 1
 HISTORY_SIZE = 120
 WEB_INTERFACES = (
-    ("Cockpit", "Server administration", "https://127.0.0.1:9090", "https", 9090),
-    ("Uptime Kuma", "Service monitoring", "http://127.0.0.1:3001", "http", 3001),
-    ("File Browser", "File management", "http://127.0.0.1:8081", "http", 8081),
-    ("FreshRSS", "Feed reader", "http://127.0.0.1:8082", "http", 8082),
-    ("Syncthing", "File synchronization", "http://127.0.0.1:8384", "http", 8384),
+    ("cockpit", "Cockpit", "Server administration", "https://127.0.0.1:9090", "https", 9090, "Management"),
+    ("uptime-kuma", "Uptime Kuma", "Service monitoring", "http://127.0.0.1:3001", "http", 3001, "Monitoring"),
+    ("file-browser", "File Browser", "File management", "http://127.0.0.1:8081", "http", 8081, "Files"),
+    ("freshrss", "FreshRSS", "Feed reader", "http://127.0.0.1:8082", "http", 8082, "News"),
+    ("syncthing", "Syncthing", "File synchronization", "http://127.0.0.1:8384", "http", 8384, "Sync"),
 )
 SERVICES = (
     ("SSH", "ssh.service", 22),
@@ -52,6 +52,13 @@ def first_line(path: Path) -> str:
 
 def as_gib(value: int | float) -> float:
     return round(value / 1024**3, 2)
+
+
+def os_pretty_name() -> str:
+    for line in Path("/etc/os-release").read_text().splitlines():
+        if line.startswith("PRETTY_NAME="):
+            return line.split("=", 1)[1].strip('"')
+    return "Ubuntu server"
 
 
 class Collector:
@@ -227,10 +234,15 @@ class Collector:
         for row in docker_rows:
             row.update(stats.get(row["name"], {}))
         web = []
-        for name, description, local_url, scheme, port in WEB_INTERFACES:
-            flags = ["curl", "-ksS", "--max-time", "3", "-o", "/dev/null", "-w", "%{http_code}", local_url]
-            response = run(*flags, timeout=5)
-            web.append({"name": name, "description": description, "scheme": scheme, "port": port, "healthy": response.startswith(("2", "3")), "status": response or "unavailable"})
+        for app_id, name, description, local_url, scheme, port, category in WEB_INTERFACES:
+            flags = ["curl", "-ksS", "--max-time", "3", "-o", "/dev/null", "-w", "%{http_code} %{time_total}", local_url]
+            response = run(*flags, timeout=5).split()
+            status = response[0] if response else "unavailable"
+            try:
+                latency_ms = round(float(response[1]) * 1000) if len(response) > 1 else None
+            except ValueError:
+                latency_ms = None
+            web.append({"id": app_id, "name": name, "description": description, "category": category, "scheme": scheme, "port": port, "healthy": status.startswith(("2", "3")), "status": status, "latency_ms": latency_ms, "source": "Local probe"})
         self.cached = {"docker": docker_rows, "services": services, "web": web}
 
     def snapshot(self) -> dict[str, Any]:
@@ -255,9 +267,10 @@ class Collector:
             alerts.append({"level": "warning", "message": "Unavailable services: " + ", ".join(failed_services)})
         return {
             "generated_at": datetime.now(ZoneInfo("Africa/Casablanca")).isoformat(),
-            "host": {"name": os.uname().nodename, "model": first_line(Path("/sys/class/dmi/id/product_name")) or "Unknown model", "os": first_line(Path("/etc/os-release")), "kernel": os.uname().release, "uptime_seconds": float(first_line(Path("/proc/uptime")).split()[0])},
+            "host": {"name": os.uname().nodename, "model": first_line(Path("/sys/class/dmi/id/product_name")) or "Unknown model", "os": os_pretty_name(), "kernel": os.uname().release, "uptime_seconds": float(first_line(Path("/proc/uptime")).split()[0])},
             "cpu": cpu, "memory": memory, "network": network, "storage": self.storage(), "temperatures": temperatures, "gpu": self.gpu(temperatures),
-            "services": self.cached["services"], "docker": self.cached["docker"], "web_interfaces": [{**item, "url": f"{item['scheme']}://{network['lan_ip']}:{item['port']}" if network["lan_ip"] else None} for item in self.cached["web"]], "processes": self.processes(), "alerts": alerts,
+            "collector": {"interval_seconds": INTERVAL_SECONDS, "slow_refresh_seconds": 15},
+            "services": self.cached["services"], "docker": self.cached["docker"], "web_interfaces": self.cached["web"], "processes": self.processes(), "alerts": alerts,
             "fan": {"profile": "Firmware automatic", "software_control": False, "next_switch": None, "reason": "No verified CPU PWM channel or fan RPM sensor is available."},
             "history": {"cpu": list(self.cpu_history), "temperature": list(self.temp_history), "memory": list(self.memory_history), "download": list(self.rx_history), "upload": list(self.tx_history)},
         }
