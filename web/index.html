@@ -6,79 +6,39 @@
     <meta name="color-scheme" content="dark">
     <meta name="description" content="Private local infrastructure dashboard for Frostserver">
     <title>Frostserver</title>
-    <link rel="stylesheet" href="/styles.css">
-    <link rel="stylesheet" href="/responsive.css">
-    <link rel="stylesheet" href="/theme.css">
-    <link rel="stylesheet" href="/layout.css">
-    <link rel="stylesheet" href="/pages.css">
+    <link rel="icon" type="image/svg+xml" href="/assets/frostserver-mark.svg?v=1">
+    <link rel="stylesheet" href="/pixel-match.css?v=4">
   </head>
   <body>
     <div class="app-shell">
       <aside class="sidebar" id="sidebar" aria-label="Dashboard navigation">
-        <a class="wordmark" href="#overview" data-route="overview" aria-label="Frostserver Overview"><img class="wordmark-logo" src="/assets/frostserver-logo.png" alt=""></a>
-        <div class="sidebar-host" id="sidebarHost">Connecting to collector…</div>
-        <nav class="side-nav" aria-label="Primary navigation">
-          <a href="#overview" data-route="overview" data-nav="overview">Overview</a>
-          <a href="#apps" data-route="apps" data-nav="apps">Apps Hub</a>
-          <a href="#performance" data-route="performance" data-nav="performance">Performance</a>
-          <a href="#storage" data-route="storage" data-nav="storage">Storage</a>
-          <a href="#network" data-route="network" data-nav="network">Network</a>
-          <a href="#services" data-route="services" data-nav="services">Services</a>
-          <a href="#docker" data-route="docker" data-nav="docker">Docker</a>
-          <a href="#processes" data-route="processes" data-nav="processes">Processes</a>
-          <a href="#settings" data-route="settings" data-nav="settings">Settings</a>
-        </nav>
-        <section class="sidebar-launcher" aria-labelledby="launcherLabel"><p id="launcherLabel">Launch app</p><div class="side-app-nav" id="appNav"><span class="muted">Loading apps…</span></div></section>
-        <div class="sidebar-footer"><span class="status-dot" id="sidebarHealth"></span><span id="sidebarStatus">Live collector</span></div>
+        <a class="brand" href="#overview" aria-label="Frostserver overview">
+          <img src="/assets/frostserver-logo-cutout.png" alt="">
+          <span><strong>Frostserver</strong><small>Server Management Dashboard</small></span>
+        </a>
+        <nav class="side-nav" id="sideNav" aria-label="Primary navigation"></nav>
+        <section class="health-card" id="healthCard" aria-live="polite">
+          <div class="health-title"><i class="status-dot"></i><strong>Connecting</strong></div>
+          <p>Waiting for collector data</p>
+        </section>
+        <div class="side-footer">
+          <a id="logsLink" href="#" target="_blank" rel="noopener noreferrer"><span class="nav-icon" data-icon="logs"></span>Logs <span aria-hidden="true">↗</span></a>
+        </div>
       </aside>
-
+      <button class="sidebar-backdrop" id="sidebarBackdrop" type="button" aria-label="Close navigation"></button>
       <main>
-        <header class="topbar">
-          <button class="menu-button" id="menuButton" aria-label="Toggle navigation" aria-expanded="false">☰</button>
-          <div class="topbar-host"><strong id="topHostname">Frostserver</strong><span id="topOs">Loading host details…</span></div>
-          <div class="topbar-status"><span class="status-dot" id="connectionDot"></span><span id="connectionState">Connecting</span><span class="topbar-divider"></span><time id="lastUpdated">—</time></div>
-          <button class="command-button" id="commandButton" aria-haspopup="dialog" aria-controls="commandPalette"><kbd>Ctrl K</kbd><span>Search or jump</span></button>
+        <header class="mobile-bar">
+          <button id="menuButton" type="button" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+          <strong>Frostserver</strong>
+          <span class="status-dot"></span>
         </header>
-
         <div class="content">
-          <section class="view" id="overviewView" data-view="overview">
-            <div class="page-heading">
-              <div><p class="eyebrow">Server overview</p><h1>Operational at a glance</h1><p>Live health, capacity, and the controls you need most.</p></div>
-              <div class="collector-state" id="refreshState">Awaiting first update</div>
-            </div>
-            <section class="host-hero" aria-label="Host status"><img class="host-crest" src="/assets/frostserver-logo.png" alt=""><dl class="host-profile" id="heroHostDetails"></dl><div class="hero-stat health"><span class="status-dot"></span><div><strong id="healthTitle">Checking health</strong><small id="healthDetail">Waiting for collector data</small></div></div><div class="hero-stat"><span>LAN IP</span><strong id="heroAddress">—</strong><small id="serviceSummary">—</small></div><div class="hero-stat"><span>Uptime</span><strong id="uptimeValue">—</strong><small>Host runtime</small></div><div class="hero-stat"><span>Hermes agent</span><strong id="hermesSummary">Checking…</strong><small id="appSummary">—</small></div></section>
-            <section class="metric-grid" id="performance">
-              <article class="metric-card"><div class="metric-label"><span>CPU</span><small id="cpuModel">—</small></div><strong id="cpuUsage">—</strong><span class="metric-unit">utilization</span><div class="meter"><i id="cpuMeter"></i></div><canvas id="cpuChart" aria-label="CPU utilization history"></canvas><dl id="cpuDetails"></dl></article>
-              <article class="metric-card"><div class="metric-label"><span>Memory</span><small id="memoryCaption">—</small></div><strong id="memoryPercent">—</strong><span class="metric-unit">used</span><div class="meter"><i id="memoryMeter"></i></div><dl class="metric-list" id="memoryDetails"></dl></article>
-              <article class="metric-card" id="storage"><div class="metric-label"><span>Storage</span><small id="storageCaption">Mounted filesystems</small></div><strong id="storagePercent">—</strong><span class="metric-unit">highest used</span><div class="meter"><i id="storageMeter"></i></div><dl class="metric-list" id="storageDetails"></dl></article>
-              <article class="metric-card" id="network"><div class="metric-label"><span>Network</span><small id="networkInterface">—</small></div><strong id="downloadValue">—</strong><span class="metric-unit">download</span><canvas id="networkChart" aria-label="Network activity history"></canvas><dl class="metric-list" id="networkDetails"></dl></article>
-              <article class="metric-card temperature-card"><div class="metric-label"><span>Temperature</span><small id="temperatureCaption">CPU package</small></div><strong id="temperatureValue">—</strong><span class="metric-unit">live hardware telemetry</span><canvas id="temperatureChart" aria-label="Temperature history"></canvas><dl class="metric-list" id="temperatureDetails"></dl></article>
-            </section>
-            <section class="overview-lower">
-              <article class="panel app-shortcuts"><div class="panel-heading"><div><p class="eyebrow">Quick access</p><h2>Installed apps</h2></div><a href="#apps" data-route="apps">Open Apps Hub</a></div><div class="shortcut-row" id="shortcutRows"></div></article>
-              <article class="panel thermal-panel"><div class="panel-heading"><div><p class="eyebrow">Hardware</p><h2>Temperature &amp; fan health</h2></div><span class="muted">Read-only telemetry</span></div><div class="thermal-grid" id="thermalMetrics"></div><p class="note" id="fanStatus">Waiting for hardware telemetry.</p></article>
-            </section>
-            <section class="panel alerts-panel"><div class="panel-heading"><div><p class="eyebrow">Attention</p><h2>Alerts</h2></div><span class="muted" id="alertCount">—</span></div><div id="alerts" aria-live="polite"></div></section>
-            <section class="panel docker-panel" id="docker"><div class="panel-heading"><div><p class="eyebrow">Runtime</p><h2>Docker containers</h2></div><div class="docker-summary"><span id="dockerCount">—</span><span>Host uptime <strong id="dockerHostUptime">—</strong></span></div></div><div class="table-wrap"><table><thead><tr><th>Container</th><th>Status</th><th>CPU</th><th>Memory</th><th>Ports</th></tr></thead><tbody id="dockerRows"></tbody></table></div></section>
-            <section class="detail-grid">
-              <article class="panel table-panel" id="services"><div class="panel-heading"><div><p class="eyebrow">Systemd</p><h2>Services</h2></div><span class="muted">Read-only</span></div><div class="service-list" id="serviceRows"></div></article>
-              <article class="panel table-panel" id="processes"><div class="panel-heading"><div><p class="eyebrow">Runtime</p><h2>Top processes</h2></div><span class="muted">By CPU</span></div><div class="table-wrap"><table><thead><tr><th>Process</th><th>CPU</th><th>Memory</th><th>Runtime</th></tr></thead><tbody id="processRows"></tbody></table></div></article>
-            </section>
+          <section id="page" aria-live="polite">
+            <div class="loading-panel">Loading live server data…</div>
           </section>
-
-          <section class="view is-hidden" id="appsView" data-view="apps">
-            <div class="page-heading apps-heading"><div><p class="eyebrow">Application launcher</p><h1>Apps Hub</h1><p>Connection-aware links to every local web interface.</p></div><div class="app-health-summary" id="appHealthSummary"></div></div>
-            <section class="apps-controls"><label class="search-box" for="appSearch"><span aria-hidden="true">⌕</span><input id="appSearch" type="search" placeholder="Search apps…" autocomplete="off"></label><div class="filter-chips" id="filterChips" role="group" aria-label="Filter apps"></div></section>
-            <p class="connection-note">URLs use the hostname or IP address in your current browser, so the same launcher works over LAN, a secure private network, or a reverse proxy. Only HTTP(S) links are permitted.</p>
-            <div class="apps-grid" id="appCards"></div>
-            <section class="panel app-table"><div class="panel-heading"><div><p class="eyebrow">Inventory</p><h2>Installed applications</h2></div><span class="muted" id="appTableCount">—</span></div><div class="table-wrap"><table><thead><tr><th>App</th><th>Category</th><th>Status</th><th>Port</th><th>Latency</th><th>Source</th></tr></thead><tbody id="appTableRows"></tbody></table></div></section>
-          </section>
-          <section class="view is-hidden" id="detailView" data-view="detail"><div id="detailPage"></div></section>
         </div>
       </main>
     </div>
-    <div class="palette-backdrop is-hidden" id="paletteBackdrop"></div>
-    <section class="command-palette is-hidden" id="commandPalette" role="dialog" aria-modal="true" aria-label="Command palette"><div class="palette-title">Jump to</div><div class="palette-actions" id="paletteActions"></div><p>Press Esc to close</p></section>
-    <script src="/app.js" defer></script>
+    <script src="/app.js?v=4" defer></script>
   </body>
 </html>

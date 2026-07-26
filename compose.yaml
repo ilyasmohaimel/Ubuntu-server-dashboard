@@ -17,3 +17,93 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:5.2.0
+    container_name: qbittorrent
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+      - "${QBITTORRENT_LAN_IP:?Set QBITTORRENT_LAN_IP}:8080:8080"
+      - "${QBITTORRENT_TAILSCALE_IP:?Set QBITTORRENT_TAILSCALE_IP}:8080:8080"
+    volumes:
+      - /srv/nas/services/config/qbittorrent:/config
+      - /srv/nas/files/Downloads/qbittorrent:/downloads
+    environment:
+      PUID: "${QBITTORRENT_PUID:-1000}"
+      PGID: "${QBITTORRENT_PGID:-1001}"
+      UMASK: "002"
+      TZ: Africa/Casablanca
+      WEBUI_PORT: "8080"
+      TORRENTING_PORT: "6881"
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/ >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 45s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  aria2:
+    build:
+      context: .
+      dockerfile: Dockerfile.aria2
+    container_name: aria2
+    user: "${QBITTORRENT_PUID:-1000}:${QBITTORRENT_PGID:-1001}"
+    restart: unless-stopped
+    expose:
+      - "6800"
+    volumes:
+      - /srv/nas/services/config/aria2:/config
+      - /srv/nas/files/Downloads/Direct:/downloads
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=32m
+    pids_limit: 128
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  ariang:
+    build:
+      context: .
+      dockerfile: Dockerfile.ariang
+    container_name: ariang
+    restart: unless-stopped
+    depends_on:
+      - aria2
+    ports:
+      - "127.0.0.1:8083:8080"
+      - "${QBITTORRENT_LAN_IP:?Set QBITTORRENT_LAN_IP}:8083:8080"
+      - "${QBITTORRENT_TAILSCALE_IP:?Set QBITTORRENT_TAILSCALE_IP}:8083:8080"
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx:rw,noexec,nosuid,nodev,size=16m
+      - /var/run:rw,noexec,nosuid,nodev,size=2m
+      - /tmp:rw,noexec,nosuid,nodev,size=8m
+    pids_limit: 128
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

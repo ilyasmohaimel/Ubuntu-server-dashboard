@@ -1,0 +1,6 @@
+FROM alpine:3.22
+
+RUN apk add --no-cache aria2 ca-certificates tini
+
+ENTRYPOINT ["/sbin/tini", "--"]
+CMD ["aria2c", "--enable-rpc=true", "--rpc-listen-all=true", "--rpc-listen-port=6800", "--rpc-allow-origin-all=false", "--dir=/downloads", "--input-file=/config/aria2.session", "--save-session=/config/aria2.session", "--save-session-interval=60", "--continue=true", "--max-concurrent-downloads=5", "--split=8", "--min-split-size=5M", "--file-allocation=none", "--auto-file-renaming=false", "--allow-overwrite=false", "--disable-ipv6=true", "--enable-dht=false", "--enable-dht6=false", "--enable-peer-exchange=false", "--follow-torrent=false", "--daemon=false"]
