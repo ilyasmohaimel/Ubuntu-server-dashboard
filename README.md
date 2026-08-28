@@ -1,4 +1,4 @@
-# Frostserver dashboard
+# Just a shitty server dashboard :)
 
 Frostserver is a static, responsive server dashboard served by an unprivileged Nginx container. A root-only local collector gathers host metrics and writes an atomic JSON snapshot to `/run/frost-dashboard/metrics.json`; Nginx exposes that snapshot read-only at `/metrics.json`.
 
